@@ -39,8 +39,8 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+RUN addgroup -g 1001 -S nextjs && \
+    adduser -S nextjs -u 1001 -G nextjs
 
 # Copy built application
 COPY --from=builder /app/public ./public
@@ -55,7 +55,7 @@ ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
 # Change ownership to non-root user
-RUN chown -R nextjs:nodejs /app
+RUN chown -R nextjs:nextjs /app
 
 USER nextjs
 
