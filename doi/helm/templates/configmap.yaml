@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "doi.fullname" . }}-config
+  labels:
+    {{- include "doi.labels" . | nindent 4 }}
+data:
+  doi.properties: |-
+    # VOSpace uri to the parent DOI folder.
+    ca.nrc.cadc.doi.vospaceParentUri = {{ .Values.app.vospaceParentUri | default "" }}
+
+    # Prefix to the DOI metadata file
+    ca.nrc.cadc.doi.metaDataPrefix = {{ .Values.app.metaDataPrefix | default "" }}
+
+    # Prefix to the DOI GMS Group name
+    ca.nrc.cadc.doi.groupPrefix = {{ .Values.app.groupPrefix | default "" }}
+
+    # DOI landing page url
+    ca.nrc.cadc.doi.landingUrl = {{ .Values.app.landingUrl | default "" }}
+
+    # DataCite MDS REST endpoint
+    ca.nrc.cadc.doi.datacite.mdsUrl = {{ .Values.app.datacite.mdsUrl | default "" }}
+
+    # DataCite account username
+    ca.nrc.cadc.doi.datacite.username = {{ .Values.app.datacite.username | default "" }}
+
+    # DataCite account password
+    ca.nrc.cadc.doi.datacite.password = {{ .Values.app.datacite.password | default "" }}
+
+    # DataCite account prefix
+    ca.nrc.cadc.doi.datacite.accountPrefix = {{ .Values.app.datacite.accountPrefix | default "" }}
+
+    {{- with .Values.app.doiIdentifierPrefix }}
+    # (optional) DOI Identifier Prefix
+    ca.nrc.cadc.doi.doiIdentifierPrefix = {{ . }}
+    {{- end }}
+
+    {{- with .Values.app.publisherGroupURI }}
+    # Publisher Group URI
+    ca.nrc.cadc.doi.publisherGroupURI = {{ . }}
+    {{- end }}
+
+    {{- if ne .Values.app.randomTestID nil }}
+    # (optional) Create a random DOI ID for testing
+    ca.nrc.cadc.doi.randomTestID = {{ .Values.app.randomTestID }}
+    {{- end }}
+
+    {{- if ne .Values.app.selfPublish nil }}
+    # (optional) Enable self publish mode (alternative settings)
+    ca.nrc.cadc.doi.selfPublish = {{ .Values.app.selfPublish }}
+    {{- end }}
+
+  # Additional configuration files referenced in doi/README.md
+  catalina.properties: |-
+
+  cadc-registry.properties: |-
+
+  # Optional logging configuration
+  cadc-log.properties: |-
+
+  # Optional alternative deployment settings
+  war-rename.conf: |-
