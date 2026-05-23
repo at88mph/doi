@@ -74,3 +74,14 @@ Create the name of the shared servops certificate secret to mount into /config.
 {{- define "doi.servopsSecretName" -}}
 {{- required "app.certificates.servopsSecret is required" .Values.app.certificates.servopsSecret }}
 {{- end }}
+
+{{/*
+Validate that the DataCite password Secret is configured.
+*/}}
+{{- define "doi.validateDatacitePasswordSecret" -}}
+{{- $name := .Values.app.datacite.passwordSecret.name -}}
+{{- $key := .Values.app.datacite.passwordSecret.key -}}
+{{- if not (and $name $key) -}}
+{{- fail "app.datacite.passwordSecret.name and app.datacite.passwordSecret.key are required" -}}
+{{- end -}}
+{{- end }}

@@ -1,3 +1,4 @@
+{{- include "doi.validateDatacitePasswordSecret" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,7 +26,7 @@ data:
     ca.nrc.cadc.doi.datacite.username = {{ required "app.datacite.username is required" .Values.app.datacite.username }}
 
     # DataCite account password
-    ca.nrc.cadc.doi.datacite.password = {{ required "app.datacite.password is required" .Values.app.datacite.password }}
+    ca.nrc.cadc.doi.datacite.password = __DATACITE_PASSWORD__
 
     # DataCite account prefix
     ca.nrc.cadc.doi.datacite.accountPrefix = {{ required "app.datacite.accountPrefix is required" .Values.app.datacite.accountPrefix }}

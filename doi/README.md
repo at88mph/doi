@@ -98,32 +98,78 @@ This client certificate is used to make authenticated server-to-server calls for
 See <a href="https://github.com/opencadc/core/tree/master/cadc-log">cadc-log</a> for common
 dynamic logging control.
 
-## building it
+## Building the Docker Image
+Build the WAR before building the container image. The image copies `build/libs/doi.war` into the
+Tomcat webapps directory.
+
 ```
 gradle clean build
-docker build -t doi -f Dockerfile .
+docker build -t bucket.canfar.net/doi:1.2.0 -f Dockerfile .
 ```
 
-## checking it
+## Deployment
+The Kubernetes deployment is managed by the Helm chart in `doi/helm`. The chart renders the
+configuration files expected in `/config` into a ConfigMap and mounts them into the container
+together with the required client certificate PEM files.
+
+The `doiadmin.pem` and `cadcproxy.pem` files are expected to already exist in Kubernetes Secrets.
+Configure their Secret names under `app.certificates`:
+
 ```
-docker run --rm -it doi:latest /bin/bash
+app:
+  certificates:
+    doiAdminSecret: doi-admin-certs   # contains doiadmin.pem
+    servopsSecret: servops-certs      # contains cadcproxy.pem
 ```
 
-## running it
+The required `doi.properties` fields are supplied through `app` values. The DataCite password
+must be provided from an existing Secret via `app.datacite.passwordSecret`. `randomTestID` and
+`selfPublish` are optional.
+
 ```
-docker run --rm --user tomcat:tomcat --volume=/path/to/external/config:/config:ro --name doi doi:latest
+app:
+  gmsID: ivo://example/gms
+  registryBaseURLs:
+    - https://registry.example.net
+  vospaceParentUri: ivo://example/vospace/doi
+  metaDataPrefix: doi-metadata-
+  groupPrefix: doi-
+  landingUrl: https://example.net/doi
+  datacite:
+    mdsUrl: https://mds.datacite.org
+    username: datacite-user
+    passwordSecret:
+      name: datacite-credentials
+      key: password
+    accountPrefix: "10.1234"
+  doiIdentifierPrefix: "10.1234"
+  publisherGroupURI: ivo://example/gms?group=doi-publishers
+  certificates:
+    doiAdminSecret: doi-admin-certs
+    servopsSecret: servops-certs
 ```
 
-## running it with alternative settings
+Render or install the chart with Helm:
+
 ```
-docker run --rm --user tomcat:tomcat --volume=/path/to/external/config:/config:ro --name doi-alt doi:latest
+helm template doi doi/helm -f values.yaml
+helm upgrade --install doi doi/helm -f values.yaml
 ```
 
-#### Note: If running with alternative settings,
+For ArgoCD, point the Application at `doi/helm` and provide these values through the Application
+source values or a values file. The referenced certificate and DataCite password Secrets must be
+created in the target namespace before the deployment starts.
+
+The chart uses a small init container (`configInit`) to inject the DataCite password into
+`/config/doi.properties` at pod startup. It is usually best to leave the default `configInit.image`
+settings alone unless you explicitly need to change them, for example to pull from a private
+registry or satisfy a cluster image policy.
+
+### Alternative Settings
+If running with alternative settings:
 1. The `doi.properties` file must contain the `doiIdentifierPrefix`, `publisherGroupURI` and `selfPublish` properties.
 2. The config folder should have `war-rename.conf` file with the following content: `mv doi.war doi-alt.war`.
 3. The `vospaceParentUri` property in `doi.properties` should be configured to use a different VOSpace folder than a doi service.
-```
 
 ## Service lifecycle
 Usage of this service can be divided into three distinct phases described below. The service does not impose a time limit on each phase.

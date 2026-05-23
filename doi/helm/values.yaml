@@ -47,8 +47,10 @@ app:
     mdsUrl: ""
     # -- DataCite account username.
     username: ""
-    # -- DataCite account password.
-    password: ""
+    # -- Existing Secret containing the DataCite account password.
+    passwordSecret:
+      name: ""
+      key: ""
     # -- DataCite account prefix.
     accountPrefix: ""
   # -- DOI Identifier Prefix.
@@ -65,6 +67,15 @@ app:
     doiAdminSecret: ""
     # -- Existing shared servops Secret containing cadcproxy.pem.
     servopsSecret: ""
+
+# Init container image used to assemble /config with the DataCite password Secret and client certificate PEM files.
+# Usually best to leave this alone unless you explicitly need to override it, for example
+# to use an image from a private registry or a cluster-mandated base image.
+configInit:
+  image:
+    repository: busybox
+    tag: "1.36"
+    pullPolicy: IfNotPresent
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:

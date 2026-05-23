@@ -32,6 +32,46 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        - name: config-init
+          image: "{{ .Values.configInit.image.repository }}:{{ .Values.configInit.image.tag }}"
+          imagePullPolicy: {{ .Values.configInit.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              for file in /config-template/*; do
+                base="$(basename "$file")"
+                if [ "$base" != "doi.properties" ]; then
+                  cp "$file" "/config/$base"
+                fi
+              done
+              PASSWORD="$(tr -d '\n' < /secrets/datacite-password/password)"
+              awk -v password="$PASSWORD" '{
+                if (index($0, "__DATACITE_PASSWORD__")) {
+                  gsub("__DATACITE_PASSWORD__", password)
+                }
+                print
+              }' /config-template/doi.properties > /config/doi.properties
+              cp /certs/doiadmin.pem /config/doiadmin.pem
+              cp /certs/cadcproxy.pem /config/cadcproxy.pem
+          volumeMounts:
+            - name: config-template
+              mountPath: /config-template
+              readOnly: true
+            - name: config
+              mountPath: /config
+            - name: datacite-password
+              mountPath: /secrets/datacite-password
+              readOnly: true
+            - name: doi-admin-cert
+              mountPath: /certs/doiadmin.pem
+              subPath: doiadmin.pem
+              readOnly: true
+            - name: servops-cert
+              mountPath: /certs/cadcproxy.pem
+              subPath: cadcproxy.pem
+              readOnly: true
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -64,21 +104,23 @@ spec:
 {{ toYaml . | nindent 12 }}
           {{- end }}
       volumes:
+        - name: config-template
+          configMap:
+            name: {{ include "doi.fullname" . }}-config
         - name: config
-          projected:
-            sources:
-              - configMap:
-                  name: {{ include "doi.fullname" . }}-config
-              - secret:
-                  name: {{ include "doi.doiAdminSecretName" . }}
-                  items:
-                    - key: doiadmin.pem
-                      path: doiadmin.pem
-              - secret:
-                  name: {{ include "doi.servopsSecretName" . }}
-                  items:
-                    - key: cadcproxy.pem
-                      path: cadcproxy.pem
+          emptyDir: {}
+        - name: datacite-password
+          secret:
+            secretName: {{ required "app.datacite.passwordSecret.name is required" .Values.app.datacite.passwordSecret.name }}
+            items:
+              - key: {{ required "app.datacite.passwordSecret.key is required" .Values.app.datacite.passwordSecret.key }}
+                path: password
+        - name: doi-admin-cert
+          secret:
+            secretName: {{ include "doi.doiAdminSecretName" . }}
+        - name: servops-cert
+          secret:
+            secretName: {{ include "doi.servopsSecretName" . }}
 {{ with .Values.volumes }}
 {{ toYaml . | nindent 8 }}
       {{- end }}
