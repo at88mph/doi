@@ -59,6 +59,12 @@ app:
   randomTestID: null
   # -- Optional self-publish mode for alternative DOI settings.
   selfPublish: null
+  # -- Existing Secrets containing the required client certificate PEM files.
+  certificates:
+    # -- Existing Secret containing doiadmin.pem.
+    doiAdminSecret: ""
+    # -- Existing shared servops Secret containing cadcproxy.pem.
+    servopsSecret: ""
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:

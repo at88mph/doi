@@ -60,3 +60,17 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the DOI admin certificate secret to mount into /config.
+*/}}
+{{- define "doi.doiAdminSecretName" -}}
+{{- required "app.certificates.doiAdminSecret is required" .Values.app.certificates.doiAdminSecret }}
+{{- end }}
+
+{{/*
+Create the name of the shared servops certificate secret to mount into /config.
+*/}}
+{{- define "doi.servopsSecretName" -}}
+{{- required "app.certificates.servopsSecret is required" .Values.app.certificates.servopsSecret }}
+{{- end }}
