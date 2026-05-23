@@ -7,38 +7,34 @@ metadata:
 data:
   doi.properties: |-
     # VOSpace uri to the parent DOI folder.
-    ca.nrc.cadc.doi.vospaceParentUri = {{ .Values.app.vospaceParentUri | default "" }}
+    ca.nrc.cadc.doi.vospaceParentUri = {{ required "app.vospaceParentUri is required" .Values.app.vospaceParentUri }}
 
     # Prefix to the DOI metadata file
-    ca.nrc.cadc.doi.metaDataPrefix = {{ .Values.app.metaDataPrefix | default "" }}
+    ca.nrc.cadc.doi.metaDataPrefix = {{ required "app.metaDataPrefix is required" .Values.app.metaDataPrefix }}
 
     # Prefix to the DOI GMS Group name
-    ca.nrc.cadc.doi.groupPrefix = {{ .Values.app.groupPrefix | default "" }}
+    ca.nrc.cadc.doi.groupPrefix = {{ required "app.groupPrefix is required" .Values.app.groupPrefix }}
 
     # DOI landing page url
-    ca.nrc.cadc.doi.landingUrl = {{ .Values.app.landingUrl | default "" }}
+    ca.nrc.cadc.doi.landingUrl = {{ required "app.landingUrl is required" .Values.app.landingUrl }}
 
     # DataCite MDS REST endpoint
-    ca.nrc.cadc.doi.datacite.mdsUrl = {{ .Values.app.datacite.mdsUrl | default "" }}
+    ca.nrc.cadc.doi.datacite.mdsUrl = {{ required "app.datacite.mdsUrl is required" .Values.app.datacite.mdsUrl }}
 
     # DataCite account username
-    ca.nrc.cadc.doi.datacite.username = {{ .Values.app.datacite.username | default "" }}
+    ca.nrc.cadc.doi.datacite.username = {{ required "app.datacite.username is required" .Values.app.datacite.username }}
 
     # DataCite account password
-    ca.nrc.cadc.doi.datacite.password = {{ .Values.app.datacite.password | default "" }}
+    ca.nrc.cadc.doi.datacite.password = {{ required "app.datacite.password is required" .Values.app.datacite.password }}
 
     # DataCite account prefix
-    ca.nrc.cadc.doi.datacite.accountPrefix = {{ .Values.app.datacite.accountPrefix | default "" }}
+    ca.nrc.cadc.doi.datacite.accountPrefix = {{ required "app.datacite.accountPrefix is required" .Values.app.datacite.accountPrefix }}
 
-    {{- with .Values.app.doiIdentifierPrefix }}
-    # (optional) DOI Identifier Prefix
-    ca.nrc.cadc.doi.doiIdentifierPrefix = {{ . }}
-    {{- end }}
+    # DOI Identifier Prefix
+    ca.nrc.cadc.doi.doiIdentifierPrefix = {{ required "app.doiIdentifierPrefix is required" .Values.app.doiIdentifierPrefix }}
 
-    {{- with .Values.app.publisherGroupURI }}
     # Publisher Group URI
-    ca.nrc.cadc.doi.publisherGroupURI = {{ . }}
-    {{- end }}
+    ca.nrc.cadc.doi.publisherGroupURI = {{ required "app.publisherGroupURI is required" .Values.app.publisherGroupURI }}
 
     {{- if ne .Values.app.randomTestID nil }}
     # (optional) Create a random DOI ID for testing
@@ -54,9 +50,32 @@ data:
   catalina.properties: |-
 
   cadc-registry.properties: |-
+    ivo://ivoa.net/std/GMS#search-1.0 = {{ required "app.gmsID is required" .Values.app.gmsID }}
+    ivo://ivoa.net/std/GMS#users-1.0 = {{ required "app.gmsID is required" .Values.app.gmsID }}
+    ivo://ivoa.net/std/UMS#users-0.1 = {{ required "app.gmsID is required" .Values.app.gmsID }}
+    ivo://ivoa.net/std/UMS#users-1.0 = {{ required "app.gmsID is required" .Values.app.gmsID }}
+    ivo://ivoa.net/sso#OAuth = {{ .Values.app.oidcURI | default "" }}
+    ivo://ivoa.net/sso#OpenID = {{ .Values.app.oidcURI | default "" }}
+
+    {{- if hasSuffix "ACIdentityManager" .Values.app.identityManagerClass }}
+    # Here to support the ACIdentityManager.  Not used by any other IdentityManager.
+    ivo://ivoa.net/std/CDP#proxy-1.0 = ivo://cadc.nrc.ca/cred
+    {{- end }}
+
+    {{- $registryBaseURLs := required "app.registryBaseURLs is required to have at least one URL" .Values.app.registryBaseURLs }}
+    {{- range $registryBaseURLs }}
+    ca.nrc.cadc.reg.client.RegistryClient.baseURL = {{ . }}
+    {{- end }}
 
   # Optional logging configuration
   cadc-log.properties: |-
+    {{- with .Values.app.loggingGroups }}
+    # Logging groups
+    group = {{ . }}
+    {{- end }}
 
   # Optional alternative deployment settings
   war-rename.conf: |-
+    {{- with .Values.app.name }}
+    mv doi.war {{ . }}.war
+    {{- end }}

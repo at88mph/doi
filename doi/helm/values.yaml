@@ -19,6 +19,47 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Application configuration rendered into the doi.properties configmap.
+app:
+  # -- Application name.  Default WAR file name is "doi.war" and is served under "/doi".  If a name is provided, the WAR file will be served under "/{name}".
+  name: ""
+  # -- GMS ID to be used for GMS service.
+  gmsID: ""
+  # -- OIDC URI to be used for OIDC service.
+  oidcURI: ""
+  # -- Registry URLs to be used for registry service.
+  registryBaseURLs: []
+  # -- Identity Manager class to be used for identity manager service.
+  identityManagerClass: ""
+  # -- Logging groups to be used for logging.
+  loggingGroups: []
+  # -- VOSpace uri to the parent DOI folder.
+  vospaceParentUri: ""
+  # -- Prefix to the DOI metadata file.
+  metaDataPrefix: ""
+  # -- Prefix to the DOI GMS Group name.
+  groupPrefix: ""
+  # -- DOI landing page url.
+  landingUrl: ""
+  # -- DataCite account configuration.
+  datacite:
+    # -- DataCite MDS REST endpoint.
+    mdsUrl: ""
+    # -- DataCite account username.
+    username: ""
+    # -- DataCite account password.
+    password: ""
+    # -- DataCite account prefix.
+    accountPrefix: ""
+  # -- DOI Identifier Prefix.
+  doiIdentifierPrefix: ""
+  # -- Publisher Group URI for alternative DOI settings.
+  publisherGroupURI: ""
+  # -- Optional developer testing flag for random DOI IDs.
+  randomTestID: null
+  # -- Optional self-publish mode for alternative DOI settings.
+  selfPublish: null
+
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
