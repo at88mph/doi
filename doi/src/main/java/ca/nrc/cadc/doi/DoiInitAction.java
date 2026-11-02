@@ -228,7 +228,7 @@ public class DoiInitAction extends InitAction {
     // exists and has the expected properties.
     private static void checkParentFolders() {
 
-        Subject adminSubject = SSLUtil.createSubject(new File("/config/doiadmin.pem"));
+        Subject adminSubject = SSLUtil.createSubject(new File(System.getProperty("user.home") + "/.ssl/doiadmin.pem"));
         adminSubject = AuthenticationUtil.augmentSubject(adminSubject);
         String adminUsername = getUsername(adminSubject);
 

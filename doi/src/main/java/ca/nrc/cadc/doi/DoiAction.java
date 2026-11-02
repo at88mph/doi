@@ -207,7 +207,7 @@ public abstract class DoiAction extends RestAction {
     }
 
     protected Subject getAdminSubject() {
-        return SSLUtil.createSubject(new File("/config/doiadmin.pem"));
+        return SSLUtil.createSubject(new File(System.getProperty("user.home") + "/.ssl/doiadmin.pem"));
     }
 
     protected void authorize() {
