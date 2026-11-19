@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: bucket.canfar.net/doi
   pullPolicy: IfNotPresent
-  tag: "1.2.0"
+  tag: "1.2.1-20261102T190538"
 
 imagePullSecrets: []
 
@@ -77,13 +77,6 @@ application:
         username: username
         password: password
 
-  certificates:
-    # Existing Secret containing doiadmin.pem and cadcproxy.pem.
-    existingSecret: "doi-certs"
-    secretKeys:
-      doiadmin: doiadmin.pem
-      cadcproxy: cadcproxy.pem
-
   # Mount an RSA public key for browser cookie validation from a Secret.
   # The Secret data key must be RsaSignaturePub.key. Leave the Secret name
   # empty when cookie validation is not required.
@@ -104,15 +97,24 @@ application:
   # This applies to the DOI service pod.
   # nodeAffinity: {}
 
-  # Optionally mount additional config or certificates.
+  # Mount client certificate Secrets at the runtime user's ~/.ssl directory
+  # (tomcat HOME is /usr/share/tomcat in the cadc-tomcat image), for example:
   # extraVolumeMounts:
-  # - mountPath: "/config/cacerts"
-  #   name: cacert-volume
+  # - name: doiadmin-clientcert
+  #   mountPath: /usr/share/tomcat/.ssl/doiadmin.pem
+  #   subPath: doiadmin.pem
+  #   readOnly: true
+  # - name: servops-clientcert
+  #   mountPath: /usr/share/tomcat/.ssl/cadcproxy.pem
+  #   subPath: cadcproxy.pem
+  #   readOnly: true
   # extraVolumes:
-  # - name: cacert-volume
+  # - name: doiadmin-clientcert
   #   secret:
-  #     defaultMode: 420
-  #     secretName: doi-cacert-secret
+  #     secretName: doiadmin-clientcert
+  # - name: servops-clientcert
+  #   secret:
+  #     secretName: servops-clientcert
 
   # Groups that can alter logging. Empty array means nobody can alter it.
   loggingGroups: []
