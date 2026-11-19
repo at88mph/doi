@@ -4,8 +4,8 @@ kubectl -n {{ .Release.Namespace }} get pods
 
 Your release is named {{ .Release.Name }}.
 
-The DOI service expects DataCite credentials from Secret {{ include "doi.dataciteAuthSecretName" . }}
-and PEM certificates from Secret {{ include "doi.certificateSecretName" . }}.
+The DOI service expects DataCite credentials from Secret {{ include "doi.dataciteAuthSecretName" . }}.
+Mount client certificate Secrets at the container user's ~/.ssl directory via application.extraVolumes and application.extraVolumeMounts.
 
 To learn more about the release, try:
 

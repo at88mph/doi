@@ -70,9 +70,3 @@ DataCite credential Secret name.
 {{- required "application.datacite.auth.existingSecret is required" .Values.application.datacite.auth.existingSecret -}}
 {{- end -}}
 
-{{/*
-PEM certificate Secret name.
-*/}}
-{{- define "doi.certificateSecretName" -}}
-{{- required "application.certificates.existingSecret is required" .Values.application.certificates.existingSecret -}}
-{{- end -}}

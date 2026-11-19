@@ -3,10 +3,6 @@
 {{- $authKeys := $auth.secretKeys | default dict -}}
 {{- $usernameKey := $authKeys.username | default "username" -}}
 {{- $passwordKey := $authKeys.password | default "password" -}}
-{{- $certs := .Values.application.certificates | default dict -}}
-{{- $certKeys := $certs.secretKeys | default dict -}}
-{{- $doiadminKey := $certKeys.doiadmin | default "doiadmin.pem" -}}
-{{- $cadcproxyKey := $certKeys.cadcproxy | default "cadcproxy.pem" -}}
 {{- $cookieKey := .Values.application.cookieSignaturePublicKey | default dict -}}
 {{- $cookieKeySecret := $cookieKey.existingSecret | default dict -}}
 {{- $cookieKeySecretName := trim (($cookieKeySecret.name | default "") | toString) -}}
@@ -58,8 +54,6 @@ spec:
             - |
               set -e
               cp -R /config-src/. /config-dst/
-              cp "/certs/${DOIADMIN_KEY}" /config-dst/doiadmin.pem
-              cp "/certs/${CADCPROXY_KEY}" /config-dst/cadcproxy.pem
               USER=$(tr -d '\n' < "/datacite/${USERNAME_KEY}")
               PASS=$(tr -d '\n' < "/datacite/${PASSWORD_KEY}")
               printf '\nca.nrc.cadc.doi.datacite.username = %s\n' "$USER" >> /config-dst/doi.properties
@@ -69,19 +63,12 @@ spec:
               value: {{ $usernameKey | quote }}
             - name: PASSWORD_KEY
               value: {{ $passwordKey | quote }}
-            - name: DOIADMIN_KEY
-              value: {{ $doiadminKey | quote }}
-            - name: CADCPROXY_KEY
-              value: {{ $cadcproxyKey | quote }}
           volumeMounts:
             - name: config-source
               mountPath: /config-src
               readOnly: true
             - name: datacite-secret
               mountPath: /datacite
-              readOnly: true
-            - name: certificate-secret
-              mountPath: /certs
               readOnly: true
             - name: config-merged
               mountPath: /config-dst
@@ -163,9 +150,6 @@ spec:
         - name: datacite-secret
           secret:
             secretName: {{ include "doi.dataciteAuthSecretName" . }}
-        - name: certificate-secret
-          secret:
-            secretName: {{ include "doi.certificateSecretName" . }}
         - name: config-merged
           emptyDir: {}
       {{- with .Values.application.extraVolumes }}

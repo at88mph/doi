@@ -2,7 +2,9 @@
 
 Digital Object Identifier service Helm chart.
 
-This chart deploys the CADC DOI Tomcat service. Non-secret configuration is rendered into a ConfigMap under `/config`; DataCite credentials and the required `doiadmin.pem` and `cadcproxy.pem` files are read from Kubernetes Secrets and merged into the runtime config by an init container. An optional `RsaSignaturePub.key` can also be projected from a Secret for browser cookie validation.
+This chart deploys the CADC DOI Tomcat service. Non-secret configuration is rendered into a ConfigMap under `/config`; DataCite credentials are read from a Kubernetes Secret and merged into `doi.properties` by an init container. An optional `RsaSignaturePub.key` can also be projected from a Secret for browser cookie validation.
+
+Client certificates (`doiadmin.pem`, `cadcproxy.pem`) are not managed by this chart. Mount your certificate Secrets at the container user's `~/.ssl` directory (tomcat `HOME` is `/usr/share/tomcat` in the [cadc-tomcat](https://github.com/opencadc/docker-base/tree/main/cadc-tomcat) image) using `application.extraVolumes` and `application.extraVolumeMounts` in your deployment values.
 
 ## Required Secrets
 
@@ -12,14 +14,6 @@ Create a Secret for DataCite credentials:
 kubectl create secret generic doi-datacite \
   --from-literal=username='<username>' \
   --from-literal=password='<password>'
-```
-
-Create a Secret for service certificates:
-
-```shell
-kubectl create secret generic doi-certs \
-  --from-file=doiadmin.pem=./doiadmin.pem \
-  --from-file=cadcproxy.pem=./cadcproxy.pem
 ```
 
 Create the optional Secret containing the cookie-signature public key:
@@ -36,12 +30,26 @@ application:
   datacite:
     auth:
       existingSecret: doi-datacite
-  certificates:
-    existingSecret: doi-certs
   cookieSignaturePublicKey:
     existingSecret:
       name: doi-cookie-signature-public-key
       path: RsaSignaturePub.key
+  extraVolumeMounts:
+    - name: doiadmin-clientcert
+      mountPath: /usr/share/tomcat/.ssl/doiadmin.pem
+      subPath: doiadmin.pem
+      readOnly: true
+    - name: servops-clientcert
+      mountPath: /usr/share/tomcat/.ssl/cadcproxy.pem
+      subPath: cadcproxy.pem
+      readOnly: true
+  extraVolumes:
+    - name: doiadmin-clientcert
+      secret:
+        secretName: doiadmin-clientcert
+    - name: servops-clientcert
+      secret:
+        secretName: servops-clientcert
 ```
 
 ## Example Values
@@ -55,13 +63,11 @@ Render and lint the chart with non-secret placeholder Secret names:
 ```shell
 helm lint doi/helm \
   --set application.datacite.auth.existingSecret=doi-datacite \
-  --set application.certificates.existingSecret=doi-certs \
   --set application.config.accountPrefix=10.5072
 
 helm template doi doi/helm \
   --namespace doi \
   --set application.datacite.auth.existingSecret=doi-datacite \
-  --set application.certificates.existingSecret=doi-certs \
   --set application.config.accountPrefix=10.5072
 ```
 
