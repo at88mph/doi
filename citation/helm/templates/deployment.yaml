@@ -44,17 +44,16 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- if .Values.canfarWebRoot }}
           env:
+          {{- if .Values.canfarWebRoot }}
             - name: CANFAR_WEB_HOST
               value: {{ .Values.canfarWebRoot | quote }}
           {{- end }}
-          {{- with .Values.livenessProbe }}
-          livenessProbe:
+          {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.env }}
-          env:
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.envFrom }}
